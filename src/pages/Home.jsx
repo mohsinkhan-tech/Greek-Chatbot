@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Box,
   Container,
@@ -6,184 +6,217 @@ import {
   Typography,
   Button,
   Card,
-  CardContent,
   Stack,
+  Chip,
 } from "@mui/material";
-import PsychologyIcon from "@mui/icons-material/Psychology";
-import AutoStoriesIcon from "@mui/icons-material/AutoStories";
-import ImageSearchIcon from "@mui/icons-material/ImageSearch";
-import SpeedIcon from "@mui/icons-material/Speed";
+import BoltIcon from "@mui/icons-material/Bolt";
+import DescriptionIcon from "@mui/icons-material/Description";
+import ImageIcon from "@mui/icons-material/Image";
+import ChatIcon from "@mui/icons-material/Chat";
 import DrawerAppBar from "../components/Navbar/AppBar";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/RagBot.png"; // you can replace later
+import ChatContainer from "../components/ChatContainer";
+
+const features = [
+  {
+    title: "Smart Conversations",
+    desc: "Chat with powerful AI models that understand context deeply.",
+    icon: <ChatIcon />,
+  },
+  {
+    title: "Document Intelligence",
+    desc: "Upload PDFs and files to extract insights instantly.",
+    icon: <DescriptionIcon />,
+  },
+  {
+    title: "Image Reasoning",
+    desc: "Understand and analyze images with AI vision models.",
+    icon: <ImageIcon />,
+  },
+  {
+    title: "Ultra Fast",
+    desc: "Optimized inference for real-time responses.",
+    icon: <BoltIcon />,
+  },
+];
 
 const Home = () => {
-  const navigate = useNavigate();
-
-  const features = [
-    {
-      title: "Wise Conversations",
-      desc: "Ask anything and receive thoughtful, intelligent answers.",
-      icon: <PsychologyIcon fontSize="large" />,
-    },
-    {
-      title: "Knowledge From Files",
-      desc: "Upload documents and extract meaningful insights.",
-      icon: <AutoStoriesIcon fontSize="large" />,
-    },
-    {
-      title: "Visual Understanding",
-      desc: "Analyze images and uncover hidden information.",
-      icon: <ImageSearchIcon fontSize="large" />,
-    },
-    {
-      title: "Fast Like Hermes",
-      desc: "Lightning-fast responses with smooth performance.",
-      icon: <SpeedIcon fontSize="large" />,
-    },
-  ];
+  const chatRef = useRef(null);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f4f1ec", color: "#1c1c1c" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#0b0f19", color: "#fff" }}>
       <DrawerAppBar />
 
-      {/* HERO SECTION */}
+      {/* HERO */}
       <Box
         sx={{
-          bgcolor: "#0e1a2b",
-          color: "#fff",
-          py: { xs: 10, md: 14 },
+          pt: { xs: 12, md: 18 },
+          pb: { xs: 10, md: 16 },
+          background: "radial-gradient(circle at top, #1a237e 0%, #0b0f19 60%)",
         }}
       >
         <Container maxWidth="lg">
-          <Grid container spacing={6} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Stack spacing={3}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <img src={logo} alt="Greek Chatbot" width={55} />
-                  <Typography
-                    sx={{
-                      fontWeight: 600,
-                      letterSpacing: 2,
-                      color: "#d4af37",
-                    }}
-                  >
-                    GREEK CHATBOT
-                  </Typography>
-                </Box>
+          <Stack spacing={4} alignItems="center" textAlign="center">
+            <Chip
+              label="AI Powered Knowledge Assistant"
+              sx={{
+                bgcolor: "rgba(255,255,255,0.1)",
+                color: "#90caf9",
+                fontWeight: 600,
+              }}
+            />
 
-                <Typography
-                  variant="h2"
-                  sx={{ fontWeight: 800, lineHeight: 1.2 }}
-                >
-                  Wisdom of AI,  
-                  <br /> Inspired by Greece
-                </Typography>
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 800,
+                lineHeight: 1.1,
+                maxWidth: 900,
+              }}
+            >
+              Greek AI.
+              <br />
+              Chat, Documents & Vision.
+            </Typography>
 
-                <Typography sx={{ color: "#c9c9c9", maxWidth: 500 }}>
-                  Greek Chatbot is your intelligent assistant — designed to
-                  answer questions, analyze documents, and understand images
-                  with clarity and speed.
-                </Typography>
+            <Typography
+              sx={{
+                color: "#b0b7c3",
+                maxWidth: 600,
+                fontSize: 18,
+              }}
+            >
+              A modern RAG-powered chatbot that understands text, files, and
+              images — all in one place.
+            </Typography>
 
-                <Button
-                  size="large"
-                  sx={{
-                    width: "fit-content",
-                    px: 5,
-                    py: 1.5,
-                    bgcolor: "#d4af37",
-                    color: "#000",
-                    fontWeight: 700,
-                    ":hover": { bgcolor: "#bfa233" },
-                  }}
-                  onClick={() => navigate("/chat")}
-                >
-                  Enter the Agora
-                </Button>
-              </Stack>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Box
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Button
+                size="large"
+                variant="contained"
                 sx={{
-                  height: 320,
-                  borderRadius: 4,
-                  bgcolor: "rgba(255,255,255,0.08)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 22,
-                  fontStyle: "italic",
-                  color: "#d4af37",
+                  px: 6,
+                  py: 1.5,
+                  fontWeight: 700,
+                  bgcolor: "#6366f1",
+                  ":hover": { bgcolor: "#4f46e5" },
+                }}
+                onClick={() =>
+                  chatRef.current?.scrollIntoView({ behavior: "smooth" })
+                }
+              >
+                Start Chatting
+              </Button>
+
+              <Button
+                size="large"
+                variant="outlined"
+                sx={{
+                  px: 6,
+                  py: 1.5,
+                  color: "#fff",
+                  borderColor: "rgba(255,255,255,0.3)",
                 }}
               >
-                “Knowledge is power.”
-              </Box>
-            </Grid>
-          </Grid>
+                Learn More
+              </Button>
+            </Stack>
+          </Stack>
         </Container>
       </Box>
 
-      {/* FEATURES SECTION */}
-      <Container maxWidth="lg" sx={{ py: 10 }}>
-        <Typography
-          variant="h4"
-          align="center"
-          fontWeight={700}
-          sx={{ mb: 6 }}
-        >
-          What Makes Greek Chatbot Powerful
-        </Typography>
-
-        <Grid container spacing={4}>
+      {/* FEATURES */}
+      <Container maxWidth="lg" sx={{ py: 12 }}>
+        <Grid container spacing={4} justifyContent="center">
           {features.map((f) => (
-            <Grid item xs={12} md={3} key={f.title}>
+            <Grid
+              item
+              key={f.title}
+              xs={12}
+              sm={6}
+              md={3}
+              sx={{
+                display: "flex",
+              }}
+            >
               <Card
                 sx={{
+                  width: "100%",
                   height: "100%",
+                  p: 3,
+                  borderRadius: 4,
                   textAlign: "center",
-                  borderRadius: 3,
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                  bgcolor: "rgba(255,255,255,0.04)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  transition: "0.3s ease",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  ":hover": {
+                    transform: "translateY(-6px)",
+                    borderColor: "#6366f1",
+                    boxShadow: "0 20px 40px rgba(99,102,241,0.15)",
+                  },
                 }}
               >
-                <CardContent>
-                  <Box sx={{ color: "#d4af37", mb: 2 }}>{f.icon}</Box>
-                  <Typography fontWeight={700} sx={{ mb: 1 }}>
-                    {f.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {f.desc}
-                  </Typography>
-                </CardContent>
+                {/* ICON */}
+                <Box
+                  sx={{
+                    color: "#6366f1",
+                    mb: 2,
+                    fontSize: 40,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  {f.icon}
+                </Box>
+
+                {/* TITLE */}
+                <Typography fontWeight={700} mb={1} sx={{ fontSize: 18 }}>
+                  {f.title}
+                </Typography>
+
+                {/* DESCRIPTION */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "#b0b7c3",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {f.desc}
+                </Typography>
               </Card>
             </Grid>
           ))}
         </Grid>
       </Container>
 
-      {/* CTA SECTION */}
-      <Box sx={{ bgcolor: "#0e1a2b", py: 8, textAlign: "center" }}>
-        <Typography variant="h4" fontWeight={700} color="#fff" mb={2}>
-          Begin Your Journey of Knowledge
-        </Typography>
-        <Typography sx={{ color: "#cfcfcf", mb: 4 }}>
-          Experience the intelligence of Greek Chatbot today.
-        </Typography>
-        <Button
-          size="large"
-          sx={{
-            px: 6,
-            py: 1.5,
-            bgcolor: "#d4af37",
-            color: "#000",
-            fontWeight: 700,
-            ":hover": { bgcolor: "#bfa233" },
-          }}
-          onClick={() => navigate("/chat")}
-        >
-          Start Chat
-        </Button>
+      {/* CTA */}
+      <Box
+        sx={{
+          py: 10,
+          textAlign: "center",
+          bgcolor: "#0e1220",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography variant="h4" fontWeight={800} mb={2}>
+            Ready to build with AI?
+          </Typography>
+          <Typography color="#b0b7c3" mb={4}>
+            Start chatting with documents and images in seconds.
+          </Typography>
+        </Container>
+      </Box>
+
+      {/* Chat */}
+      <Box ref={chatRef}>
+        <ChatContainer />
       </Box>
     </Box>
   );

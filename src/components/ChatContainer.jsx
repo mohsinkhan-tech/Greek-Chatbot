@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { Box, Paper } from "@mui/material";
-import ChatHeader from "./ChatHeader";
-import ChatMessages from "./ChatMessages";
-import ChatInput from "./ChatInput";
+import { useState, useRef, useEffect } from "react";
+import {
+  Box,
+  Paper,
+  Typography,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { sendMessageToAI } from "../services/aiService";
-import * as pdfjsLib from "pdfjs-dist";
-import * as mammoth from "mammoth";
-import Tesseract from "tesseract.js";
 
 const MODEL_ENDPOINT = "MiniMaxAI/MiniMax-M2.1";
 
@@ -14,6 +16,7 @@ const ChatContainer = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
   // ---------------- SEND MESSAGE ----------------
   const handleSend = async (message = input) => {
@@ -48,100 +51,29 @@ const ChatContainer = () => {
   };
 
   // ---------------- FILE UPLOAD ----------------
-  const handleFileUpload = async (file) => {
-    setLoading(true);
-    let extractedText = "";
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", text: `📎 Uploaded file: ${file.name}` },
+    ]);
 
-    try {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "user",
-          type: "file",
-          fileName: file.name,
-          fileType: file.type,
-          timestamp: Date.now(),
-        },
-      ]);
-
-      // TEXT FILE
-      if (file.type === "text/plain") {
-        extractedText = await file.text();
-      }
-
-      // PDF FILE
-      else if (file.type === "application/pdf") {
-        const buffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(buffer).promise;
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          extractedText +=
-            content.items.map((item) => item.str).join(" ") + "\n";
-        }
-      }
-
-      // WORD FILE
-      else if (
-        file.type ===
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ) {
-        const buffer = await file.arrayBuffer();
-        const result = await mammoth.extractRawText({ arrayBuffer: buffer });
-        extractedText = result.value;
-      }
-
-      // IMAGE OCR
-      else if (file.type.startsWith("image/")) {
-        const imageDataUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-
-        const { data } = await Tesseract.recognize(imageDataUrl, "eng");
-        extractedText = data.text;
-      }
-
-      // UNSUPPORTED
-      else {
-        alert("Unsupported file format.");
-        setLoading(false);
-        return;
-      }
-
-      if (!extractedText.trim()) {
-        alert("No readable text found.");
-        setLoading(false);
-        return;
-      }
-
-      const reply = await sendMessageToAI(
-        MODEL_ENDPOINT,
-        extractedText
-      );
-
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", text: reply, timestamp: Date.now() },
-      ]);
-    } catch (error) {
-      console.error(error);
-      alert("File processing failed.");
-    }
-
-    setLoading(false);
+    // Send file content to AI (simplified)
+    const text = await file.text();
+    handleSend(text);
   };
+
+  // ---------------- AUTO SCROLL ----------------
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // ---------------- UI ----------------
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -149,32 +81,35 @@ const ChatContainer = () => {
       }}
     >
       <Paper
-        elevation={0}
+        elevation={10}
         sx={{
           width: "100%",
-          maxWidth: 1200,
-          height: "90vh",
+          maxWidth: 900,
+          height: "85vh",
           display: "flex",
           flexDirection: "column",
           borderRadius: 4,
           overflow: "hidden",
-          background: "rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.06)",
           backdropFilter: "blur(20px)",
           border: "1px solid rgba(255,255,255,0.12)",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.45)",
         }}
       >
         {/* HEADER */}
         <Box
           sx={{
             px: 4,
-            py: 2.5,
+            py: 2,
             borderBottom: "1px solid rgba(255,255,255,0.1)",
-            background:
-              "linear-gradient(90deg, rgba(79,172,254,0.15), rgba(0,242,254,0.15))",
+            background: "rgba(255,255,255,0.05)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <ChatHeader />
+          <Typography variant="h6" fontWeight={700} color="#fff">
+            AI Chat Assistant
+          </Typography>
         </Box>
 
         {/* MESSAGES */}
@@ -184,17 +119,43 @@ const ChatContainer = () => {
             px: 4,
             py: 3,
             overflowY: "auto",
-            scrollbarWidth: "thin",
-            "&::-webkit-scrollbar": {
-              width: 6,
-            },
-            "&::-webkit-scrollbar-thumb": {
-              background: "rgba(255,255,255,0.25)",
-              borderRadius: 3,
-            },
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
           }}
         >
-          <ChatMessages messages={messages} loading={loading} />
+          {messages.map((m, i) => (
+            <Box
+              key={i}
+              sx={{
+                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+                bgcolor:
+                  m.role === "user"
+                    ? "rgba(99,102,241,0.8)"
+                    : "rgba(255,255,255,0.1)",
+                color: m.role === "user" ? "#fff" : "#e0e0e0",
+                px: 3,
+                py: 1.5,
+                borderRadius: 3,
+                maxWidth: "75%",
+                wordBreak: "break-word",
+                boxShadow:
+                  m.role === "user"
+                    ? "0 4px 10px rgba(99,102,241,0.3)"
+                    : "0 4px 10px rgba(0,0,0,0.2)",
+              }}
+            >
+              <Typography variant="body1">{m.text}</Typography>
+            </Box>
+          ))}
+
+          {loading && (
+            <Box sx={{ alignSelf: "flex-start" }}>
+              <CircularProgress size={24} color="inherit" />
+            </Box>
+          )}
+
+          <div ref={messagesEndRef} />
         </Box>
 
         {/* INPUT */}
@@ -204,14 +165,50 @@ const ChatContainer = () => {
             py: 2,
             borderTop: "1px solid rgba(255,255,255,0.1)",
             background: "rgba(0,0,0,0.3)",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
           }}
         >
-          <ChatInput
-            input={input}
-            setInput={setInput}
-            onSend={handleSend}
-            onFileUpload={handleFileUpload}
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type a message..."
+            style={{
+              flex: 1,
+              padding: "10px 14px",
+              borderRadius: 8,
+              border: "none",
+              outline: "none",
+              background: "rgba(255,255,255,0.08)",
+              color: "#fff",
+            }}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
+
+          <label htmlFor="file-upload">
+            <input
+              id="file-upload"
+              type="file"
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
+            <IconButton sx={{ color: "#fff" }}>
+              <UploadFileIcon />
+            </IconButton>
+          </label>
+
+          <IconButton
+            onClick={() => handleSend()}
+            sx={{
+              color: "#fff",
+              bgcolor: "#6366f1",
+              "&:hover": { bgcolor: "#4f46e5" },
+            }}
+          >
+            <SendIcon />
+          </IconButton>
         </Box>
       </Paper>
     </Box>
